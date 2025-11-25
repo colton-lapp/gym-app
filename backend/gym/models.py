@@ -108,6 +108,12 @@ class Exercise(TimestampedModel):
     track_resistance = models.BooleanField(default=False)
     track_notes = models.BooleanField(default=False)
 
+    def last_completion_for_user(self, user):
+        """
+        Returns the most recent ExerciseCompletion of this exercise for a given user.
+        """
+        return self.completions.filter(user=user).order_by("-created_at").first()
+    
     class Meta:
         unique_together = ("user", "name")
         ordering = ["name"]

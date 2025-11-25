@@ -1,13 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    MuscleGroupViewSet,
-    TagViewSet,
-    ExerciseViewSet,
-    GymSessionViewSet,
-    ExerciseCompletionViewSet,
-    ExerciseEventViewSet,
-)
+
+from .views.categories import MuscleGroupViewSet, TagViewSet
+from .views.exercises import ExerciseViewSet
+from .views.sessions import GymSessionViewSet
+from .views.events import ExerciseCompletionViewSet, ExerciseEventViewSet
 
 router = DefaultRouter()
 router.register("muscle-groups", MuscleGroupViewSet)

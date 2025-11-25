@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gym-app"
+version = "0.1.0"
+description = "Web app to log gym sessions"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Colton Lapp", email = "colton.lapp@gmail.com" },
+]
+
+dependencies = [
+    "django>=4.2.26",
+    "django-cors-headers>=4.4.0",
+    "djangorestframework>=3.15.2",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[project.urls]
+Homepage = "https://github.com/colton-lapp/"
+
+
+# --- MODERN FIX (PEP 621 + setuptools 65+) ---
+# Disable automatic package discovery entirely.
+# This prevents setuptools from trying to treat `gym/` and `server/`
+# as installable Python packages when uv performs an editable build.
+[tool.setuptools]
+packages = []

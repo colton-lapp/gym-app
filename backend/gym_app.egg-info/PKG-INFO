@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: gym-app
+Version: 0.1.0
+Summary: Web app to log gym sessions
+Author-email: Colton Lapp <colton.lapp@gmail.com>
+Project-URL: Homepage, https://github.com/colton-lapp/
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: django>=4.2.26
+Requires-Dist: django-cors-headers>=4.4.0
+Requires-Dist: djangorestframework>=3.15.2
+Provides-Extra: dev

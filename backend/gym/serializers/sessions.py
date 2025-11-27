@@ -33,7 +33,3 @@ class GymSessionSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at", "is_open"]
-
-    def create(self, validated_data):
-        user = self.context["request"].user
-        return GymSession.objects.create(user=user, **validated_data)

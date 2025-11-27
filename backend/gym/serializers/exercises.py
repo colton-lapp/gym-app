@@ -31,7 +31,6 @@ class ExerciseSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "image",
-            "exercise_type",
             "muscle_groups",
             "tags",
             "track_reps",

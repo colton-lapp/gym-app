@@ -6,6 +6,10 @@ from .views.exercises import ExerciseViewSet
 from .views.sessions import GymSessionViewSet
 from .views.events import ExerciseCompletionViewSet, ExerciseEventViewSet
 
+from .views.auth import signup, login, logout, me
+
+
+
 router = DefaultRouter()
 router.register("muscle-groups", MuscleGroupViewSet)
 router.register("tags", TagViewSet)
@@ -16,4 +20,9 @@ router.register("events", ExerciseEventViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+
+    path("auth/signup/", signup, name="signup"),
+    path("auth/login/", login, name="login"),
+    path("auth/logout/", logout, name="logout"),
+    path("auth/me/", me, name="me"),
 ]

@@ -65,12 +65,6 @@ class Exercise(TimestampedModel):
     Definition of an exercise (per user).
     Controls which fields are tracked on events.
     """
-    TYPE_SETS = "SETS"
-    TYPE_SPLITS = "SPLITS"
-    EXERCISE_TYPE_CHOICES = [
-        (TYPE_SETS, "Sets (reps/weight/etc)"),
-        (TYPE_SPLITS, "Splits (time/distance/etc)"),
-    ]
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -83,12 +77,6 @@ class Exercise(TimestampedModel):
         null=True,
         blank=True,
     )
-    exercise_type = models.CharField(
-        max_length=10,
-        choices=EXERCISE_TYPE_CHOICES,
-        default=TYPE_SETS,
-    )
-
     muscle_groups = models.ManyToManyField(
         MuscleGroup,
         related_name="exercises",

@@ -91,7 +91,7 @@ async function startSession(): Promise<void> {
   loadError.value = null;
 
   try {
-    await api.post("sessions/");
+    await api.post("sessions/", {});
     await fetchCurrentSession();
     if (hasNoCurrentSession.value) {
       await fetchLastSession();
@@ -133,7 +133,7 @@ async function reopenLastSession(): Promise<void> {
 
   try {
     const res = await api.post<GymSession>(
-      `sessions/${lastSession.value.id}/reopen/`
+      `sessions/${lastSession.value.id}/reopen/`, {}
     );
     currentSession.value = res.data;
     hasNoCurrentSession.value = false;

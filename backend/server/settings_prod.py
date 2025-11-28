@@ -30,7 +30,7 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-CSRF_USE_SESSIONS = True
+# CSRF_USE_SESSIONS = True
 
 LOGGING["root"]["level"] = "INFO"
 LOGGING["loggers"]["django.request"]["level"] = "INFO"

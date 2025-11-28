@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate, login as dj_login, logout as dj_lo
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, response, status
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
 
 User = get_user_model()
 
@@ -64,6 +66,8 @@ def login(request):
         )
 
     dj_login(request, user)
+    response = JsonResponse({"status": "ok"})
+    response["X-CSRFToken"] = get_token(request)
     return response.Response({"id": user.id, "email": user.email})
 
 

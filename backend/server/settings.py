@@ -50,6 +50,8 @@ CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
+CSRF_USE_SESSIONS = True
+
 # -------------------------------------------------------------------
 # Apps
 # -------------------------------------------------------------------

@@ -20,10 +20,11 @@ export default boot(({ app }) => {
 
 export { api };
 
-api.interceptors.request.use((config) => {
-  const csrftoken = getCookie("csrftoken");
-  if (csrftoken) {
-    config.headers["X-CSRFToken"] = csrftoken;
-  }
-  return config;
-});
+// Don't need this after using session cookies in settings.py
+// api.interceptors.request.use((config) => {
+//   const csrftoken = getCookie("csrftoken");
+//   if (csrftoken) {
+//     config.headers["X-CSRFToken"] = csrftoken;
+//   }
+//   return config;
+// });

@@ -30,12 +30,19 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-# CSRF_USE_SESSIONS = True
+# Important: subdomain cookie so frontend + API share it
+SESSION_COOKIE_DOMAIN = ".getswolemakegraphs.com"
+CSRF_COOKIE_DOMAIN = ".getswolemakegraphs.com"
+
+# Explicitly keep this OFF so frontend can read csrftoken
+CSRF_COOKIE_HTTPONLY = False
+
+# DO NOT set CSRF_USE_SESSIONS here
+# CSRF_USE_SESSIONS = True  # leave commented/removed
 
 LOGGING["root"]["level"] = "INFO"
 LOGGING["loggers"]["django.request"]["level"] = "INFO"
 
-# Use Railway Postgres (PG* env vars)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

@@ -4,7 +4,7 @@
     <q-header elevated>
       <q-toolbar class="flex justify-between items-center">
 
-        <q-toolbar-title class="text-bold">
+        <q-toolbar-title class="text-bold cursor-pointer" @click="goHome">
           Gym App
         </q-toolbar-title>
 
@@ -51,5 +51,9 @@ const firstInitial = computed(() =>
 
 async function goAccount() {
  await router.push("/auth/account");
+}
+
+async function goHome(){
+  await router.push("/")
 }
 </script>

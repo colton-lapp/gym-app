@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-
+from django.db.models import Max
 
 class TimestampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -26,6 +26,7 @@ class MuscleGroup(TimestampedModel):
     )
     name = models.CharField(max_length=100)
     is_default = models.BooleanField(default=False)
+    icon = models.CharField(max_length=50, blank=True)  # Material/Iconify name
 
     class Meta:
         unique_together = ("user", "name")
@@ -50,7 +51,8 @@ class Tag(TimestampedModel):
     )
     name = models.CharField(max_length=100)
     is_default = models.BooleanField(default=False)
-
+    icon = models.CharField(max_length=50, blank=True)  # Material/Iconify name
+    
     class Meta:
         unique_together = ("user", "name")
         ordering = ["name"]
@@ -98,9 +100,22 @@ class Exercise(TimestampedModel):
 
     def last_completion_for_user(self, user):
         """
-        Returns the most recent ExerciseCompletion of this exercise for a given user.
+        Returns the most recent *previous* ExerciseCompletion for this exercise
+        for the given user, skipping:
+        - completions with no events
+        - completions belonging to the current open session
         """
-        return self.completions.filter(user=user).order_by("-created_at").first()
+        return (
+            self.completions
+            .filter(
+                user=user,
+                events__isnull=False,             # must have sets/splits
+                session__end_time__isnull=False,  # session must be CLOSED
+            )
+            .annotate(last_event_at=Max("events__created_at"))
+            .order_by("-last_event_at")
+            .first()
+        )
     
     class Meta:
         unique_together = ("user", "name")

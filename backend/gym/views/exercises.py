@@ -1,29 +1,27 @@
+# gym/api/exercises.py
+from django.db.models import Max, Q
 from rest_framework import viewsets, permissions, decorators, response, status
 from ..models import Exercise
 from ..serializers.exercises import ExerciseSerializer
 from ..serializers.events import ExerciseCompletionSerializer
 
-
 class ExerciseViewSet(viewsets.ModelViewSet):
-    """
-    Endpoints:
-    - GET  /api/exercises/
-      TODO filters:
-        ?tag={id}
-        ?muscle_group={id}
-        ?search={string}
-        ?recent=true (order by last completion)
-    - POST /api/exercises/
-    - PATCH /api/exercises/{id}/
-    - DELETE /api/exercises/{id}/
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ExerciseSerializer
     queryset = Exercise.objects.all()
 
     def get_queryset(self):
         user = self.request.user
-        qs = Exercise.objects.filter(user=user)
+
+        qs = (
+            Exercise.objects
+            .filter(user=user)
+            .annotate(
+                # last completion time (any completion; if you prefer last closed-with-events only,
+                # you can copy the logic from last_completion_for_user)
+                last_completed_at=Max("completions__created_at")
+            )
+        )
 
         # Filter by tag
         tag_id = self.request.query_params.get("tag_id")
@@ -35,33 +33,28 @@ class ExerciseViewSet(viewsets.ModelViewSet):
         if mg_id:
             qs = qs.filter(muscle_groups__id=mg_id)
 
-        # Search by name
+        # Search by name, muscle group, or tag
         search = self.request.query_params.get("search")
         if search:
-            qs = qs.filter(name__icontains=search)
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(muscle_groups__name__icontains=search)
+                | Q(tags__name__icontains=search)
+            ).distinct()
 
         # Sort
         ordering = self.request.query_params.get("ordering")
         if ordering == "name":
             qs = qs.order_by("name")
         elif ordering == "recent":
-            # last completion time; annotate, then order
-            from django.db.models import Max
-            qs = qs.annotate(
-                last_completed_at=Max("completions__created_at")
-            ).order_by("-last_completed_at", "name")
+            qs = qs.order_by("-last_completed_at", "name")
+        else:
+            qs = qs.order_by("name")
 
         return qs
 
     @decorators.action(detail=True, methods=["get"])
     def last_completion(self, request, pk=None):
-        """
-        GET /api/exercises/{id}/last_completion/
-
-        Returns:
-        - The last ExerciseCompletion for this exercise for the current user
-        - Or 404 if none exists
-        """
         exercise = self.get_object()
         completion = exercise.last_completion_for_user(request.user)
         if not completion:

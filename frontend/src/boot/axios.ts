@@ -1,7 +1,7 @@
 import { boot } from "quasar/wrappers";
 import axios from "axios";
 import type  { AxiosInstance } from "axios";
-import { getCookie } from "src/utils/csrf";
+// import { getCookie } from "src/utils/csrf";
 
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {

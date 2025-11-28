@@ -66,10 +66,19 @@ def login(request):
         )
 
     dj_login(request, user)
-    response = JsonResponse({"status": "ok"})
-    response["X-CSRFToken"] = get_token(request)
-    return response.Response({"id": user.id, "email": user.email})
 
+    # DRF Response does NOT automatically return the CSRF cookie.
+    # You must manually set it.
+    resp = response.Response({"id": user.id, "email": user.email})
+    resp.set_cookie(
+        "csrftoken",
+        get_token(request),
+        secure=True,
+        httponly=False,
+        samesite="None",
+        domain=settings.CSRF_COOKIE_DOMAIN,
+    )
+    return resp
 
 # POST /api/auth/logout/
 @api_view(["POST"])

@@ -47,16 +47,32 @@ async function submit() {
     loading.value = false;
   }
 }
+
+async function goToLogin() {
+  await router.push("/auth/login");  
+}
+
+
 </script>
 
 
 <template>
   <q-page padding>
+    <h3 class="q-mb-md">Create an Account</h3>
+    <p><span class="text-italic">So you want to get swole and make some graphs?</span>
+    Contact Colton for the access code</p>
+    <p class="text-bold q-mb-none q-mt-lg">Credentials</p>
     <q-input v-model="first_name" label="First Name" />
     <q-input v-model="last_name" label="Last Name" />
     <q-input v-model="email" label="Email" />
     <q-input v-model="password" type="password" label="Password" />
     <q-input v-model="access_code" type="text" label="Access Code" />
-    <q-btn @click="submit" label="Sign Up" color="primary" class="q-mt-md" />
+
+
+    <div class="row q-mt-md q-mb-lg">
+      <q-btn @click="submit" label="Sign Up" color="primary" class="q-mr-sm" />
+    <q-btn @click="goToLogin" label="Login" color="secondary"  />
+    </div>
+
   </q-page>
 </template>

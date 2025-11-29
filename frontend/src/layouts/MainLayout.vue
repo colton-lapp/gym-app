@@ -5,7 +5,7 @@
       <q-toolbar class="flex justify-between items-center">
 
         <q-toolbar-title class="text-bold cursor-pointer" @click="goHome">
-          Gym App
+          Get Swole, Make Graphs
         </q-toolbar-title>
 
         <!-- If logged in, show avatar -->

@@ -37,15 +37,22 @@ async function submit() {
 }
 
 async function goToSignup() {
-  await router.push("/auth/signup");   // <--- or "/signup" depending on your structure
+  await router.push("/auth/signup");  
 }
+
+
+
 </script>
 
 <template>
   <q-page padding>
+    <h3> Login </h3>
+    <p>You must login or create an account before use.</p>
     <q-input v-model="email" label="Email" />
     <q-input v-model="password" type="password" label="Password" />
-    <q-btn @click="submit" label="Login" color="primary" class="q-mt-md" />
-    <q-btn @click="goToSignup" label="Create Account" color="primary" class="q-mt-md" />
+    <div class="row q-mt-md q-mb-lg">
+      <q-btn @click="submit" label="Login" color="primary" class="q-mr-sm" />
+    <q-btn @click="goToSignup" label="Create an Account" color="secondary"  />
+    </div>
   </q-page>
 </template>

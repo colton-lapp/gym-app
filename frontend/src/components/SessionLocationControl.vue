@@ -184,8 +184,8 @@ async function clearLocation(): Promise<void> {
 </script>
 
 <template>
-  <div class="row items-center q-gutter-sm">
-    <div class="col">
+  <div class="row items-center q-gutter-sm q-mt-sm" style="max-width:300px; border: 1px grey solid; border-radius:5px">
+    <div class="col" >
       <div v-if="currentLocation">
         <div class="text-body2">
           Location: <strong>{{ currentLocation!.name }}</strong>

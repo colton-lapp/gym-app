@@ -265,8 +265,11 @@ async function goToExercisePicker(): Promise<void> {
             Time elapsed: {{ durationMinutes }} minutes
           </div>
 
+          <div >
+            Exercises so far: {{ completedExerciseCount }}
+          </div>
+
           <div class="q-mt-xs">
-            Location:
             <SessionLocationControl
               v-if="currentSession"
               :session-id="currentSession.id"
@@ -275,9 +278,6 @@ async function goToExercisePicker(): Promise<void> {
             />
           </div>
 
-          <div class="q-mt-xs">
-            Exercises so far: {{ completedExerciseCount }}
-          </div>
         </q-card-section>
 
         <!-- exercise list -->
@@ -308,11 +308,11 @@ async function goToExercisePicker(): Promise<void> {
           />
         </q-card-section>
         
-          <div>
+          <div class="row justify-center q-py-md">
             <q-btn
               label="End Session"
               color="negative"
-              flat
+              
               @click="endSession"
             />
           </div>

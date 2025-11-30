@@ -38,9 +38,29 @@ function onSave(): void {
 </script>
 
 <template>
-  <div>
-    <div class="text-subtitle2 q-mb-sm">
+  <div style="max-width:400px">
+    <div class="row justify-between  q-mb-sm q-mt-md">
+    <div class="text-subtitle2">
       {{ label }}
+    </div>
+        <div class="row justify-end">
+          <q-btn
+            label="Save"
+            size="sm"
+            color="primary"
+            :loading="saving"
+            @click="onSave"
+          />
+          <q-btn
+            v-if="canClear"
+            flat
+            size="sm"
+            label="Clear"
+            color="negative"
+            :disable="!internalValue"
+            @click="onClear"
+          />
+        </div>
     </div>
 
     <q-input
@@ -49,23 +69,8 @@ function onSave(): void {
       autogrow
       outlined
       :placeholder="placeholder"
+
     />
 
-    <div class="row justify-end q-gutter-sm q-mt-sm">
-      <q-btn
-        v-if="canClear"
-        flat
-        label="Clear"
-        color="negative"
-        :disable="!internalValue"
-        @click="onClear"
-      />
-      <q-btn
-        label="Save"
-        color="primary"
-        :loading="saving"
-        @click="onSave"
-      />
-    </div>
   </div>
 </template>

@@ -57,7 +57,7 @@ async function goToCompletion(id: number): Promise<void> {
 <template>
   <div>
     <div class="row items-center justify-between q-mb-sm">
-      <div class="text-subtitle2">Exercises in this session</div>
+      <h6 class="q-ma-none">Exercises in this session</h6>
       <q-spinner v-if="loading" size="sm" />
     </div>
 

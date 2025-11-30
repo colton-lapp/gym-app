@@ -34,7 +34,7 @@ class ExerciseSerializer(serializers.ModelSerializer):
             "muscle_groups", "tags",
             "muscle_group_ids", "tag_ids",
             "track_reps", "track_weight", "track_distance",
-            "track_duration", "track_resistance", "track_notes",
+            "track_duration", "track_resistance_string", "track_resistance_numeric", "track_notes",
             "last_completed_at", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "image", "muscle_groups", "tags",

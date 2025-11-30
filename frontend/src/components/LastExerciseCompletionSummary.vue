@@ -1,38 +1,9 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
+import type { ExerciseEvent, Exercise,
+  ExerciseCompletionSummary
+ } from "src/types/types";
 
-interface ExerciseEvent {
-  id: number;
-  order_index: number;
-  reps: number | null;
-  duration_seconds: number | null;
-  weight: string | null;
-  distance: string | null;
-  resistance: string | null;
-  note: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Exercise {
-  id: number;
-  name: string;
-  track_reps?: boolean;
-  track_weight?: boolean;
-  track_distance?: boolean;
-  track_duration?: boolean;
-  track_resistance?: boolean;
-  track_notes?: boolean;
-}
-
-interface ExerciseCompletionSummary {
-  id: number;
-  exercise: Exercise;
-  note: string;
-  created_at: string;
-  updated_at: string;
-  events: ExerciseEvent[];
-}
 
 const props = defineProps<{
   exercise: Exercise;
@@ -47,7 +18,8 @@ const showReps = computed(() => props.exercise.track_reps ?? true);
 const showWeight = computed(() => props.exercise.track_weight ?? false);
 const showDistance = computed(() => props.exercise.track_distance ?? false);
 const showDuration = computed(() => props.exercise.track_duration ?? false);
-const showResistance = computed(() => props.exercise.track_resistance ?? false);
+const showResistanceNumeric = computed(() => props.exercise.track_resistance_numeric ?? false);
+const showResistanceString = computed(() => props.exercise.track_resistance_string ?? false);
 
 
 const createdAt = computed<Date | null>(() => {
@@ -92,10 +64,12 @@ function formatMetrics(e: ExerciseEvent): string {
     const duration = formatDuration(e.duration_seconds);
     if (duration) parts.push(duration);
   }
-  if (showResistance.value && e.resistance != null) {
-    parts.push(`${e.resistance} res`);
+  if (showResistanceNumeric.value && e.resistance_numeric != null) {
+    parts.push(`${e.resistance_numeric} res`);
   }
-
+  if (showResistanceString.value && e.resistance_string != null) {
+    parts.push(`${e.resistance_string} res`);
+  }
   if (!parts.length) return "No metrics logged";
 
   return parts.join(" · ");

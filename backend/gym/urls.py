@@ -7,6 +7,7 @@ from .views.sessions import GymSessionViewSet
 from .views.events import ExerciseCompletionViewSet, ExerciseEventViewSet
 
 from .views.auth import signup, login, logout, me
+from .views.locations import UserLocationViewSet
 
 
 
@@ -17,6 +18,7 @@ router.register("exercises", ExerciseViewSet)
 router.register("sessions", GymSessionViewSet)
 router.register("exercise-completions", ExerciseCompletionViewSet)
 router.register("events", ExerciseEventViewSet)
+router.register("locations", UserLocationViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

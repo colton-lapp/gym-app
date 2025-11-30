@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "src/boot/axios";
 import ExerciseList, {
-  type ExerciseSummary,
 } from "src/components/ExerciseList.vue";
+import type {ExerciseSummary} from "src/types/types";
 
 interface ExerciseCompletionResponse {
   id: number;

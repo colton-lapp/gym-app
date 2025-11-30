@@ -5,52 +5,10 @@ import { api } from "src/boot/axios";
 import NoteEditor from "src/components/NoteEditor.vue";
 import ExerciseEventList from "src/components/ExerciseEventList.vue";
 import LastExerciseCompletionSummary from "src/components/LastExerciseCompletionSummary.vue";
+import type { ExerciseEvent,ExerciseCompletionDetail,
+  ExerciseEventPayload
+ } from "src/types/types";
 
-interface ExerciseEvent {
-  id: number;
-  order_index: number;
-  reps: number | null;
-  duration_seconds: number | null;
-  weight: string | null;
-  distance: string | null;
-  resistance: string | null;
-  note: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Exercise {
-  id: number;
-  name: string;
-  exercise_type?: string;
-  track_reps?: boolean;
-  track_weight?: boolean;
-  track_distance?: boolean;
-  track_duration?: boolean;
-  track_resistance?: boolean;
-  track_notes?: boolean;
-}
-
-interface ExerciseCompletionDetail {
-  id: number;
-  session: number;
-  exercise: Exercise;
-  note: string;
-  created_at: string;
-  updated_at: string;
-  events: ExerciseEvent[];
-}
-
-interface ExerciseEventPayload {
-  completion: number;
-  order_index: number;
-  reps: number | null;
-  weight: number | null;
-  distance: number | null;
-  duration_seconds: number | null;
-  resistance: number | null;
-  note: string;
-}
 
 const route = useRoute();
 const router = useRouter();
@@ -75,8 +33,15 @@ const formReps = ref<string>("");
 const formWeight = ref<string>("");
 const formDistance = ref<string>("");
 const formDurationSeconds = ref<string>("");
-const formResistance = ref<string>("");
+const formResistanceNumeric = ref<string>("");
+const formResistanceString = ref<string>("");
 const formNote = ref<string>("");
+
+// duration unit toggle (false = seconds, true = minutes)
+const durationUnitIsMinutes = ref(false);
+const durationLabel = computed<string>(() =>
+  durationUnitIsMinutes.value ? "Duration (min)" : "Duration (sec)"
+);
 
 // delete dialog state
 const deleteDialogOpen = ref(false);
@@ -88,23 +53,26 @@ const lastCompletion = ref<ExerciseCompletionDetail | null>(null);
 const lastCompletionLoading = ref(false);
 const lastCompletionError = ref<string | null>(null);
 
-const showRepsField = computed<boolean>(() =>
-  completion.value?.exercise.track_reps ?? true
+const showRepsField = computed<boolean>(
+  () => completion.value?.exercise.track_reps ?? true
 );
-const showWeightField = computed<boolean>(() =>
-  completion.value?.exercise.track_weight ?? false
+const showWeightField = computed<boolean>(
+  () => completion.value?.exercise.track_weight ?? false
 );
-const showDistanceField = computed<boolean>(() =>
-  completion.value?.exercise.track_distance ?? false
+const showDistanceField = computed<boolean>(
+  () => completion.value?.exercise.track_distance ?? false
 );
-const showDurationField = computed<boolean>(() =>
-  completion.value?.exercise.track_duration ?? false
+const showDurationField = computed<boolean>(
+  () => completion.value?.exercise.track_duration ?? false
 );
-const showResistanceField = computed<boolean>(() =>
-  completion.value?.exercise.track_resistance ?? false
+const showResistanceNumericField = computed<boolean>(
+  () => completion.value?.exercise.track_resistance_numeric ?? false
 );
-const showNoteField = computed<boolean>(() =>
-  completion.value?.exercise.track_notes ?? false
+const showResistanceStringField = computed<boolean>(
+  () => completion.value?.exercise.track_resistance_string ?? false
+);
+const showNoteField = computed<boolean>(
+  () => completion.value?.exercise.track_notes ?? false
 );
 
 // derived
@@ -157,7 +125,6 @@ async function fetchLastCompletion(exerciseId: number): Promise<void> {
     const res = await api.get<ExerciseCompletionDetail>(
       `exercises/${exerciseId}/last_completion/`
     );
-    console.log(res.data)
     // If the "last completion" is actually this one, treat as "no prior"
     if (res.data.id === completionId.value) {
       lastCompletion.value = null;
@@ -167,7 +134,6 @@ async function fetchLastCompletion(exerciseId: number): Promise<void> {
   } catch (err: unknown) {
     const axiosErr = err as { response?: { status?: number } };
     if (axiosErr.response?.status === 404) {
-      // no completions yet for this exercise
       lastCompletion.value = null;
     } else {
       console.error(err);
@@ -212,7 +178,6 @@ async function clearCompletionNote(): Promise<void> {
 // navigation
 async function goBackToSession(): Promise<void> {
   if (!completion.value?.session) return;
-  // For now, just go home; you can later route to /session/:id
   await router.push(`/`);
 }
 
@@ -222,8 +187,10 @@ function resetEventForm(): void {
   formWeight.value = "";
   formDistance.value = "";
   formDurationSeconds.value = "";
-  formResistance.value = "";
+  formResistanceNumeric.value = "";
+  formResistanceString.value = "";
   formNote.value = "";
+  durationUnitIsMinutes.value = false; // default to seconds
   eventError.value = null;
 }
 
@@ -247,7 +214,8 @@ async function onAddEventClick(): Promise<void> {
       weight?: string | number | null;
       distance?: string | number | null;
       duration_seconds?: number | null;
-      resistance?: string | number | null;
+      resistance_numeric?: string | number | null;
+      resistance_string?: string | null;
     }>(`exercise-completions/${completion.value.id}/last_values/`);
 
     const data = res.data;
@@ -262,10 +230,15 @@ async function onAddEventClick(): Promise<void> {
       formDistance.value = String(data.distance);
     }
     if (showDurationField.value && data.duration_seconds != null) {
+      // default: show raw seconds, toggle defaults to "seconds"
       formDurationSeconds.value = String(data.duration_seconds);
+      durationUnitIsMinutes.value = false;
     }
-    if (showResistanceField.value && data.resistance != null) {
-      formResistance.value = String(data.resistance);
+    if (showResistanceNumericField.value && data.resistance_numeric != null) {
+      formResistanceNumeric.value = String(data.resistance_numeric);
+    }
+    if (showResistanceStringField.value && data.resistance_string != null) {
+      formResistanceString.value = data.resistance_string;
     }
   } catch (err) {
     console.log("last_values prefill error (ignored)", err);
@@ -280,17 +253,19 @@ function openEditEventDialog(event: ExerciseEvent): void {
   activeEvent.value = event;
   eventError.value = null;
 
-  formReps.value =
-    event.reps != null ? String(event.reps) : "";
-  formWeight.value =
-    event.weight != null ? String(event.weight) : "";
-  formDistance.value =
-    event.distance != null ? String(event.distance) : "";
+  formReps.value = event.reps != null ? String(event.reps) : "";
+  formWeight.value = event.weight != null ? String(event.weight) : "";
+  formDistance.value = event.distance != null ? String(event.distance) : "";
   formDurationSeconds.value =
     event.duration_seconds != null ? String(event.duration_seconds) : "";
-  formResistance.value =
-    event.resistance != null ? String(event.resistance) : "";
+  formResistanceNumeric.value =
+    event.resistance_numeric != null ? String(event.resistance_numeric) : "";
+  formResistanceString.value =
+    event.resistance_string != null ? event.resistance_string : "";
   formNote.value = event.note || "";
+
+  // For existing events, default to seconds view; user can toggle to minutes
+  durationUnitIsMinutes.value = false;
 
   eventDialogOpen.value = true;
 }
@@ -314,24 +289,48 @@ async function submitEvent(): Promise<void> {
     order_index:
       activeEvent.value?.order_index ??
       ((completion.value.events?.length || 0) + 1),
-
     reps: null,
     weight: null,
     distance: null,
     duration_seconds: null,
-    resistance: null,
+    resistance_numeric: null,
+    resistance_string: null,
     note: "",
   };
 
-  payload.reps = showRepsField.value ? parseNumberOrNull(formReps.value) : null;
-  payload.weight = showWeightField.value ? parseNumberOrNull(formWeight.value) : null;
-  payload.distance = showDistanceField.value ? parseNumberOrNull(formDistance.value) : null;
-  payload.duration_seconds = showDurationField.value
+  payload.reps = showRepsField.value
+    ? parseNumberOrNull(formReps.value)
+    : null;
+
+  payload.weight = showWeightField.value
+    ? parseNumberOrNull(formWeight.value)
+    : null; // interpret as pounds
+
+  payload.distance = showDistanceField.value
+    ? parseNumberOrNull(formDistance.value)
+    : null; // interpret as miles
+
+  const rawDuration = showDurationField.value
     ? parseNumberOrNull(formDurationSeconds.value)
     : null;
-  payload.resistance = showResistanceField.value
-    ? parseNumberOrNull(formResistance.value)
+
+  if (showDurationField.value && rawDuration != null) {
+    // convert minutes -> seconds if checkbox is on
+    payload.duration_seconds = durationUnitIsMinutes.value
+      ? rawDuration * 60
+      : rawDuration;
+  } else {
+    payload.duration_seconds = null;
+  }
+
+  payload.resistance_numeric = showResistanceNumericField.value
+    ? parseNumberOrNull(formResistanceNumeric.value)
     : null;
+
+  payload.resistance_string = showResistanceStringField.value
+    ? formResistanceString.value || null
+    : null;
+
   payload.note = showNoteField.value ? formNote.value.trim() : "";
 
   try {
@@ -391,7 +390,6 @@ async function confirmDeleteEvent(): Promise<void> {
 
     <div v-else-if="completion" class="column q-gutter-md">
       <q-card flat bordered>
-
         <!-- Header: back + title -->
         <q-card-section class="row items-center justify-between">
           <div class="row items-center q-gutter-sm">
@@ -432,6 +430,7 @@ async function confirmDeleteEvent(): Promise<void> {
         <!-- last completion stats -->
         <q-card-section>
           <LastExerciseCompletionSummary
+            v-if="completion"
             :exercise="completion.exercise"
             :last-completion="lastCompletion"
             :loading="lastCompletionLoading"
@@ -442,6 +441,7 @@ async function confirmDeleteEvent(): Promise<void> {
         <!-- Current sets / splits -->
         <q-card-section>
           <ExerciseEventList
+            v-if="completion"
             :events="completion.events"
             :loading="false"
             @edit="openEditEventDialog"
@@ -476,100 +476,113 @@ async function confirmDeleteEvent(): Promise<void> {
     </div>
 
     <!-- Event create/edit dialog -->
-  <q-dialog v-model="eventDialogOpen">
-    <q-card style="min-width: 360px">
-      <q-card-section>
-        <div class="text-h6">
-          {{ eventDialogMode === "create" ? "Add Set / Split" : "Edit Set / Split" }}
-        </div>
-      </q-card-section>
+    <q-dialog v-model="eventDialogOpen">
+      <q-card style="min-width: 360px">
+        <q-card-section>
+          <div class="text-h6">
+            {{ eventDialogMode === "create" ? "Add Set / Split" : "Edit Set / Split" }}
+          </div>
+        </q-card-section>
 
-      <q-card-section class="q-gutter-md">
-        <div class="row q-col-gutter-md">
-          <q-input
-            v-if="showRepsField"
-            v-model="formReps"
-            type="number"
-            outlined
-            label="Reps"
-            class="col"
-            :disable="savingEvent"
-          />
-          <q-input
-            v-if="showWeightField"
-            v-model="formWeight"
-            type="number"
-            outlined
-            label="Weight"
-            class="col"
-            :disable="savingEvent"
-          />
-        </div>
+        <q-card-section class="q-gutter-md">
+          <div class="row q-col-gutter-md">
+            <q-input
+              v-if="showRepsField"
+              v-model="formReps"
+              type="number"
+              outlined
+              label="Reps"
+              class="col"
+              :disable="savingEvent"
+            />
+            <q-input
+              v-if="showWeightField"
+              v-model="formWeight"
+              type="number"
+              outlined
+              label="Weight (lb)"
+              class="col"
+              :disable="savingEvent"
+            />
+          </div>
 
-        <div class="row q-col-gutter-md">
-          <q-input
-            v-if="showDistanceField"
-            v-model="formDistance"
-            type="number"
-            outlined
-            label="Distance"
-            class="col"
-            :disable="savingEvent"
-          />
-          <q-input
+          <div class="row q-col-gutter-md">
+            <q-input
+              v-if="showDistanceField"
+              v-model="formDistance"
+              type="number"
+              outlined
+              label="Distance (mi)"
+              class="col"
+              :disable="savingEvent"
+            />
+            <q-input
+              v-if="showDurationField"
+              v-model="formDurationSeconds"
+              type="number"
+              outlined
+              :label="durationLabel"
+              class="col"
+              :disable="savingEvent"
+            />
+          </div>
+
+          <q-checkbox
             v-if="showDurationField"
-            v-model="formDurationSeconds"
+            v-model="durationUnitIsMinutes"
+            label="Interpret duration as minutes (otherwise seconds)"
+            :disable="savingEvent"
+            class="q-mb-sm"
+          />
+
+          <q-input
+            v-if="showResistanceNumericField"
+            v-model="formResistanceNumeric"
             type="number"
             outlined
-            label="Duration (sec)"
-            class="col"
+            label="Resistance (numeric)"
             :disable="savingEvent"
           />
-        </div>
 
-        <q-input
-          v-if="showResistanceField"
-          v-model="formResistance"
-          type="number"
-          outlined
-          label="Resistance"
-          :disable="savingEvent"
-        />
+          <q-input
+            v-if="showResistanceStringField"
+            v-model="formResistanceString"
+            outlined
+            label="Resistance (band color, etc)"
+            :disable="savingEvent"
+          />
 
-        <q-input
-          v-if="showNoteField"
-          v-model="formNote"
-          outlined
-          type="textarea"
-          autogrow
-          label="Per-set note"
-          :disable="savingEvent"
-        />
+          <q-input
+            v-if="showNoteField"
+            v-model="formNote"
+            outlined
+            type="textarea"
+            autogrow
+            label="Per-set note"
+            :disable="savingEvent"
+          />
 
-        <div
-          v-if="eventError"
-          class="text-negative text-caption"
-        >
-          {{ eventError }}
-        </div>
-      </q-card-section>
+          <div v-if="eventError" class="text-negative text-caption">
+            {{ eventError }}
+          </div>
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn
-          flat
-          label="Cancel"
-          v-close-popup
-          :disable="savingEvent"
-        />
-        <q-btn
-          color="primary"
-          :label="eventDialogMode === 'create' ? 'Add' : 'Save'"
-          :loading="savingEvent"
-          @click="submitEvent"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Cancel"
+            v-close-popup
+            :disable="savingEvent"
+          />
+          <q-btn
+            color="primary"
+            :label="eventDialogMode === 'create' ? 'Add' : 'Save'"
+            :loading="savingEvent"
+            @click="submitEvent"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Delete confirmation dialog -->
     <q-dialog v-model="deleteDialogOpen">

@@ -3,22 +3,12 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/auth";
 import NoteEditor from "src/components/NoteEditor.vue";
+import SessionLocationControl from "src/components/SessionLocationControl.vue"
 import SessionExerciseList, {
-  type ExerciseCompletionSummary,
 } from "src/components/SessionExerciseList.vue";
 import { api } from "src/boot/axios";
-
-interface GymSession {
-  id: number;
-  start_time: string;
-  end_time: string | null;
-  is_open: boolean;
-  location: string;
-  note: string;
-  exercise_completions: ExerciseCompletionSummary[];
-  created_at: string;
-  updated_at: string;
-}
+import type { GymSession
+ } from "src/types/types";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -277,12 +267,12 @@ async function goToExercisePicker(): Promise<void> {
 
           <div class="q-mt-xs">
             Location:
-            <span v-if="currentSession.location">
-              {{ currentSession.location }}
-            </span>
-            <span v-else class="text-grey">
-              not set
-            </span>
+            <SessionLocationControl
+              v-if="currentSession"
+              :session-id="currentSession.id"
+              :initial-location="currentSession.location"
+              @updated="(loc) => { if (currentSession) currentSession.location = loc }"
+            />
           </div>
 
           <div class="q-mt-xs">

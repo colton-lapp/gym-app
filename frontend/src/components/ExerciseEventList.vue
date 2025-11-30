@@ -1,16 +1,8 @@
 <script lang="ts" setup>
-interface ExerciseEvent {
-  id: number;
-  order_index: number;
-  reps: number | null;
-  duration_seconds: number | null;
-  weight: string | null;
-  distance: string | null;
-  resistance: string | null;
-  note: string;
-  created_at: string;
-  updated_at: string;
-}
+
+import type { ExerciseEvent
+ } from "src/types/types";
+
 
 const props = defineProps<{
   events: ExerciseEvent[] | null | undefined;
@@ -41,7 +33,8 @@ function formatMetrics(e: ExerciseEvent): string {
   const duration = formatDuration(e.duration_seconds);
   if (duration) parts.push(duration);
 
-  if (e.resistance != null) parts.push(`${e.resistance} resistance`);
+  if (e.resistance_numeric != null) parts.push(`${e.resistance_numeric} resistance`);
+  if (e.resistance_string != null) parts.push(`${e.resistance_string} resistance`);
 
   return parts.length ? parts.join(" · ") : "No metrics recorded";
 }

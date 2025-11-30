@@ -92,10 +92,11 @@ class Exercise(TimestampedModel):
 
     # Optional fields toggles – UI decides which inputs show up.
     track_reps = models.BooleanField(default=True)
-    track_weight = models.BooleanField(default=False)
+    track_weight = models.BooleanField(default=True)
     track_distance = models.BooleanField(default=False)
     track_duration = models.BooleanField(default=False)
-    track_resistance = models.BooleanField(default=False)
+    track_resistance_numeric = models.BooleanField(default=False)
+    track_resistance_string = models.BooleanField(default=False)
     track_notes = models.BooleanField(default=False)
 
     def last_completion_for_user(self, user):
@@ -125,6 +126,44 @@ class Exercise(TimestampedModel):
         return f"{self.name} ({self.user})"
 
 
+class UserLocationQuerySet(models.QuerySet):
+    def for_user(self, user):
+        return self.filter(user=user)
+
+    def recent_first(self):
+        # updated_at reflects both edits and when it was last used
+        return self.order_by("-updated_at")
+    
+class UserLocation(TimestampedModel):  # instead of models.Model
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="locations",
+    )
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255, blank=True)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+
+    objects = UserLocationQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-updated_at"]
+        unique_together = ("user", "name")
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.user_id})"
+
 class GymSession(TimestampedModel):
     """
     A training session for a user.
@@ -137,7 +176,13 @@ class GymSession(TimestampedModel):
     )
     start_time = models.DateTimeField(default=timezone.now)
     end_time = models.DateTimeField(null=True, blank=True)
-    location = models.CharField(max_length=255, blank=True)
+    location = models.ForeignKey(
+        UserLocation,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="sessions",
+    )
     note = models.TextField(blank=True)
 
     class Meta:
@@ -213,7 +258,8 @@ class ExerciseCompletion(TimestampedModel):
             "weight": last.weight,
             "distance": last.distance,
             "duration_seconds": last.duration_seconds,
-            "resistance": last.resistance,
+            "resistance_numeric": last.resistance_numeric,
+            "resistance_string": last.resistance_string,
         }
 
 
@@ -244,17 +290,25 @@ class ExerciseEvent(TimestampedModel):
         decimal_places=2,
         null=True,
         blank=True,
+        help_text="weight in pounds"
     )
     distance = models.DecimalField(
         max_digits=7,
         decimal_places=2,
         null=True,
         blank=True,
-        help_text="Distance in chosen unit (e.g. km, miles, etc.)",
+        help_text="Distance in miles",
+
     )
-    resistance = models.DecimalField(
+    resistance_numeric = models.DecimalField(
         max_digits=7,
         decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    resistance_string = models.CharField(
+        max_length=100,
         null=True,
         blank=True,
     )

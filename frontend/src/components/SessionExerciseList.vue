@@ -1,35 +1,10 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import type { ExerciseCompletionSummary
+ } from "src/types/types";
 
-interface ExerciseEventSummary {
-  id: number;
-  reps: number | null;
-  weight: string | null;
-  distance: string | null;
-  duration_seconds: number | null;
-  resistance: string | null;
-  note: string;
-  created_at: string;
-  updated_at: string;
-}
 
-interface ExerciseSummary {
-  id: number;
-  name: string;
-  exercise_type?: string;
-  muscle_groups?: { id: number; name: string; icon: string }[];
-  tags?: { id: number; name: string; icon: string }[];
-}
-
-export interface ExerciseCompletionSummary {
-  id: number;
-  exercise: ExerciseSummary;
-  note: string;
-  created_at: string;
-  updated_at: string;
-  events?: ExerciseEventSummary[];
-}
 
 const props = defineProps<{
   completions: ExerciseCompletionSummary[] | null | undefined;

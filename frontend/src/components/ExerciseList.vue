@@ -1,30 +1,12 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
+import type { ExerciseSummary, ExerciseGroup
+ } from "src/types/types";
 
-export interface MiniLabel {
-  id: number;
-  name: string;
-  icon: string; // e.g. "humerus_alt" or "fitness_center"
-}
 
-export interface ExerciseSummary {
-  id: number;
-  name: string;
-  image?: string | null;
-  muscle_groups?: MiniLabel[];
-  tags?: MiniLabel[];
-  last_completed_at?: string | null;
-}
 
 type SortMode = "alpha" | "recent" | "muscle_groups" | "tags";
 
-interface ExerciseGroup {
-  key: string;
-  label: string;
-  type: "muscle_group" | "tag" | "other";
-  icon?: string | null;
-  items: ExerciseSummary[];
-}
 
 const props = defineProps<{
   exercises: ExerciseSummary[] | null | undefined;

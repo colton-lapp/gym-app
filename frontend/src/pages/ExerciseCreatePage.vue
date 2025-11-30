@@ -30,7 +30,8 @@ const trackReps = ref(true);
 const trackWeight = ref(false);
 const trackDistance = ref(false);
 const trackDuration = ref(false);
-const trackResistance = ref(false);
+const trackResistanceNumeric = ref(false);
+const trackResistanceString = ref(false);
 const trackNotes = ref(false);
 
 // tag / muscle-group options
@@ -76,7 +77,8 @@ function buildExercisePayload() {
     track_weight: trackWeight.value,
     track_distance: trackDistance.value,
     track_duration: trackDuration.value,
-    track_resistance: trackResistance.value,
+    track_resistance_numeric: trackResistanceNumeric.value,
+    track_resistance_string: trackResistanceString.value,
     track_notes: trackNotes.value,
     muscle_group_ids: selectedMuscleGroupIds.value,
     tag_ids: selectedTagIds.value,
@@ -221,9 +223,15 @@ async function cancel(): Promise<void> {
                 label="Duration"
               />
               <q-checkbox
-                v-model="trackResistance"
+                v-model="trackResistanceNumeric"
                 :disable="saving"
-                label="Resistance"
+                label="Resistance (numeric)"
+              />
+
+              <q-checkbox 
+                v-model="trackResistanceString"
+                :disable="saving"
+                label="Resistance (string)"
               />
               <q-checkbox
                 v-model="trackNotes"
